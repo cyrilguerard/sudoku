@@ -50,6 +50,13 @@ impl FreeNumberFlags {
     ];
 }
 
+impl Debug for FreeNumberFlags {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", Into::<u16>::into(*self))?;
+        Result::Ok(())
+    }
+}
+
 impl From<u16> for FreeNumberFlags {
     fn from(v: u16) -> Self {
         FreeNumberFlags::VALUES[v as usize]
