@@ -1,0 +1,12 @@
+[package]
+name = "sudoku"
+version = "0.1.0"
+authors = ["Cyril Guerard <guerard.cyril@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.3"
+bitmask = "0.5.0"
+termion = "1.5.3"
