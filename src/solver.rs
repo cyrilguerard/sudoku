@@ -1,5 +1,8 @@
 use crate::board::{Board, BOARD_SIZE};
 
+use rand::prelude::SliceRandom;
+use rand::{thread_rng, Rng};
+
 pub trait Solver {
     fn solve(&self, board: &mut Board) -> bool;
 }
@@ -32,7 +35,8 @@ impl SimpleSolver {
             return Self::fill_cell(board, next_cell.0, next_cell.1);
         }
 
-        let available_values = board.get_available_values(row, col);
+        let mut available_values = board.get_available_values(row, col);
+        available_values.shuffle(&mut thread_rng());
 
         for val in available_values {
             board.set_value(row, col, val).unwrap();

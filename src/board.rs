@@ -95,6 +95,7 @@ impl Clone for Board {
 }
 
 impl Board {
+
     pub fn new(generator: Option<&dyn Generator>) -> Board {
         let mut board = Board::default();
         generator.map(|g| g.fill(&mut board));

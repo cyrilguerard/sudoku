@@ -1,47 +1,58 @@
 use rand::prelude::SliceRandom;
-use rand::thread_rng;
+use rand::{thread_rng, Rng};
 
 use crate::board::{Board, BOARD_SIZE};
+use crate::solver::{SimpleSolver, Solver};
+
+const EASY: u8 = 38;
+const MEDIUM: u8 = 30;
+const HARD: u8 = 25;
+const EXPERT: u8 = 23;
+
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
+    Expert
+}
 
 pub trait Generator {
     fn fill(&self, board: &mut Board);
 }
 
-pub struct BasicGenerator;
+pub struct BasicGenerator {
+    nb_filled_cell: u8
+}
 
 impl Generator for BasicGenerator {
+
     fn fill(&self, board: &mut Board) {
-        Self::fill_cell(board, 0, 0);
+
+        SimpleSolver::new().solve(board); // TODO: check if solvalble
+
+        let total_cells = BOARD_SIZE * BOARD_SIZE;
+        let mut cells: Vec<usize> = (0..total_cells).collect();
+        cells.shuffle(&mut thread_rng());
+
+        cells.iter()
+            .take(total_cells - self.nb_filled_cell as usize)
+            .for_each(|pos| board.clear_value(pos / BOARD_SIZE, pos % BOARD_SIZE));
+
     }
 }
 
 impl BasicGenerator {
-    pub fn new() -> BasicGenerator {
-        BasicGenerator
+
+    pub fn new(difficulty: Difficulty) -> BasicGenerator {
+        let nb_filled_cell = match difficulty {
+            Difficulty::Easy => EASY,
+            Difficulty::Medium => MEDIUM,
+            Difficulty::Hard => HARD,
+            Difficulty::Expert => EXPERT
+        };
+        BasicGenerator {
+            nb_filled_cell
+        }
     }
 
-    fn fill_cell(board: &mut Board, row: usize, col: usize) -> bool {
-        if row == BOARD_SIZE || col == BOARD_SIZE {
-            return true;
-        }
-
-        let mut available_values = board.get_available_values(row, col);
-        if !available_values.is_empty() {
-            available_values.shuffle(&mut thread_rng());
-
-            for val in available_values {
-                board.set_value(row, col, val).unwrap();
-
-                let cell = row * BOARD_SIZE + col + 1;
-                let valid = Self::fill_cell(board, cell / BOARD_SIZE, cell % BOARD_SIZE);
-                if valid {
-                    return true;
-                }
-
-                board.clear_value(row, col);
-            }
-        }
-
-        return false;
-    }
 }

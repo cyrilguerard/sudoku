@@ -1,11 +1,15 @@
 use std::io;
 
 use crate::board::BOARD_SIZE;
-use crate::input::Command::{Quit, WriteDigit, WrongInput, Solve};
+use crate::input::Command::{Quit, WriteDigit, WrongInput, Solve, NewEasy, NewMedium, NewHard, NewExpert};
 
 pub enum Command {
     WrongInput(String),
     WriteDigit(usize, usize, u8),
+    NewEasy,
+    NewMedium,
+    NewHard,
+    NewExpert,
     Solve,
     Quit,
 }
@@ -47,6 +51,10 @@ fn parse_command_no_args(input: &str) -> Command {
     match input.as_str() {
         "quit" => Quit,
         "solve" => Solve,
+        "easy" => NewEasy,
+        "medium" => NewMedium,
+        "hard" => NewHard,
+        "expert" => NewExpert,
         _ => WrongInput(String::from("Unknown command"))
     }
 }
