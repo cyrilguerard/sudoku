@@ -83,11 +83,21 @@ pub struct Board {
     cells: [[u8; BOARD_SIZE]; BOARD_SIZE],
 }
 
-impl Board {
+impl Clone for Board {
+    fn clone(&self) -> Self {
+        Board {
+            free_number_rows: self.free_number_rows.clone(),
+            free_number_columns: self.free_number_columns.clone(),
+            free_number_boxes: self.free_number_boxes.clone(),
+            cells: self.cells.clone(),
+        }
+    }
+}
 
-    pub fn new(generator: &dyn Generator) -> Board {
+impl Board {
+    pub fn new(generator: Option<&dyn Generator>) -> Board {
         let mut board = Board::default();
-        generator.fill(&mut board);
+        generator.map(|g| g.fill(&mut board));
         board
     }
 
@@ -95,7 +105,16 @@ impl Board {
         self.cells[row][col]
     }
 
-    pub fn set_value(&mut self, row: usize, col: usize, val: u8) {
+    pub fn set_value(
+        &mut self,
+        row: usize,
+        col: usize,
+        val: u8,
+    ) -> std::result::Result<(), String> {
+        if !self.can_set_value(row, col, val) {
+            return Err(String::from("Forbidden value"));
+        }
+
         self.clear_value(row, col);
         self.cells[row][col] = val;
 
@@ -105,6 +124,7 @@ impl Board {
             self.free_number_columns[col].unset(flag);
             self.free_number_boxes[Board::compute_box_index(row, col)].unset(flag);
         }
+        Ok(())
     }
 
     pub fn clear_value(&mut self, row: usize, col: usize) {
@@ -127,6 +147,14 @@ impl Board {
             .into_iter()
             .filter(|d| free_values.contains(FreeNumberFlags::from(*d as u16)))
             .collect()
+    }
+
+    fn can_set_value(&self, row: usize, col: usize, val: u8) -> bool {
+        let flag = FreeNumberFlags::from(val as u16);
+
+        self.free_number_rows[row].contains(flag)
+            && self.free_number_columns[col].contains(flag)
+            && self.free_number_boxes[Board::compute_box_index(row, col)].contains(flag)
     }
 
     fn compute_box_index(row: usize, col: usize) -> usize {

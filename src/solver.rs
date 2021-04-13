@@ -1,0 +1,56 @@
+use crate::board::{Board, BOARD_SIZE};
+
+pub trait Solver {
+    fn solve(&self, board: &mut Board) -> bool;
+}
+
+pub struct SimpleSolver;
+
+impl Solver for SimpleSolver {
+    fn solve(&self, board: &mut Board) -> bool {
+        if Self::fill_cell(&mut board.clone(), 0, 0) {
+            return Self::fill_cell(board, 0, 0);
+        }
+        return false;
+    }
+}
+
+impl SimpleSolver {
+
+    pub fn new() -> SimpleSolver {
+        SimpleSolver
+    }
+
+    fn fill_cell(board: &mut Board, row: usize, col: usize) -> bool {
+
+        if row == BOARD_SIZE || col == BOARD_SIZE {
+            return true;
+        }
+
+        if board.get_value(row, col) != 0 {
+            let next_cell = Self::next_cell(row, col);
+            return Self::fill_cell(board, next_cell.0, next_cell.1);
+        }
+
+        let available_values = board.get_available_values(row, col);
+
+        for val in available_values {
+            board.set_value(row, col, val).unwrap();
+
+            let next_cell = Self::next_cell(row, col);
+            if Self::fill_cell(board, next_cell.0, next_cell.1) {
+                return true;
+            }
+
+            board.clear_value(row, col);
+        }
+
+        return false;
+    }
+
+    fn next_cell(row: usize, col: usize) -> (usize, usize) {
+        let cell = row * BOARD_SIZE + col + 1;
+        (cell / BOARD_SIZE, cell % BOARD_SIZE)
+    }
+
+}

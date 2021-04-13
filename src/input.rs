@@ -1,11 +1,12 @@
 use std::io;
 
 use crate::board::BOARD_SIZE;
-use crate::input::Command::{Quit, WriteDigit, WrongInput};
+use crate::input::Command::{Quit, WriteDigit, WrongInput, Solve};
 
 pub enum Command {
     WrongInput(String),
     WriteDigit(usize, usize, u8),
+    Solve,
     Quit,
 }
 
@@ -18,13 +19,13 @@ pub fn read_input() -> Command {
     let inputs: Vec<_> = line.trim().split(" ").into_iter().collect();
 
     match inputs.len() {
-        1 => parse_quit(inputs[0]),
-        3 => parse_write_digit_input(&inputs),
+        1 => parse_command_no_args(inputs[0]),
+        3 => parse_write_digit(&inputs),
         _ => WrongInput(String::from("Unknown command")),
     }
 }
 
-fn parse_write_digit_input(inputs: &Vec<&str>) -> Command {
+fn parse_write_digit(inputs: &Vec<&str>) -> Command {
     assert_eq!(inputs.len(), 3);
 
     if let Ok(row) = read_one_digit(inputs[0], 1) {
@@ -41,11 +42,12 @@ fn parse_write_digit_input(inputs: &Vec<&str>) -> Command {
     ))
 }
 
-fn parse_quit(input: &str) -> Command {
-    if String::from(input).to_lowercase().eq("q") {
-        Quit
-    } else {
-        WrongInput(String::from("Unknown command"))
+fn parse_command_no_args(input: &str) -> Command {
+    let input = String::from(input).to_lowercase();
+    match input.as_str() {
+        "quit" => Quit,
+        "solve" => Solve,
+        _ => WrongInput(String::from("Unknown command"))
     }
 }
 

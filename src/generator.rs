@@ -30,7 +30,7 @@ impl BasicGenerator {
             available_values.shuffle(&mut thread_rng());
 
             for val in available_values {
-                board.set_value(row, col, val);
+                board.set_value(row, col, val).unwrap();
 
                 let cell = row * BOARD_SIZE + col + 1;
                 let valid = Self::fill_cell(board, cell / BOARD_SIZE, cell % BOARD_SIZE);
