@@ -57,6 +57,10 @@ impl Game {
         solved
     }
 
+    pub fn end(&mut self) {
+        self.board.freeze()
+    }
+
     pub fn reset(&mut self) {
         self.board.reset();
         self.start_time = Instant::now();

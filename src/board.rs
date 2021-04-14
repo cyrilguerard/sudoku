@@ -86,7 +86,7 @@ pub struct Value(u8);
 
 impl From<u8> for Value {
     fn from(val: u8) -> Self {
-        assert!(0 <= val && val <= 9);
+        assert!(val <= 9);
         Value(val)
     }
 }
@@ -161,7 +161,7 @@ impl Board {
     pub fn reset(&mut self) {
         for row in self.cells.iter_mut() {
             for cell in row.iter_mut() {
-                if let Free(val) = *cell {
+                if let Free(_) = *cell {
                     *cell = Free(0.into());
                 }
             }
@@ -186,7 +186,7 @@ impl Board {
             return Err(String::from("Forbidden value"));
         }
 
-        self.clear_value(row, col);
+        self.clear_value(row, col)?;
         self.cells[row][col] = Cell::new(val, false);
 
         if val != 0 {

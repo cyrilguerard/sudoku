@@ -82,7 +82,8 @@ fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
                                         "Congratulations !!! You solved this Sudoku in {}m{}s.",
                                         seconds / 60,
                                         seconds % 60
-                                    ))
+                                    ));
+                                    game.end();
                                 } else {
                                     game.set_message(format!("[{},{}] = {} done", row, col, val))
                                 }

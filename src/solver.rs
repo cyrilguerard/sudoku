@@ -11,9 +11,14 @@ pub struct SimpleSolver;
 
 impl Solver for SimpleSolver {
     fn solve(&self, board: &mut Board) -> bool {
+        if board.is_solved() {
+           return true;
+        }
+
         if Self::fill_cell(&mut board.clone(), 0, 0) {
             return Self::fill_cell(board, 0, 0);
         }
+
         return false;
     }
 }
@@ -44,7 +49,7 @@ impl SimpleSolver {
                 return true;
             }
 
-            board.clear_value(row, col);
+            board.clear_value(row, col).unwrap();
         }
 
         return false;
