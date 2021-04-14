@@ -1,7 +1,7 @@
-use crate::board::{Board, BOARD_SIZE};
-
 use rand::prelude::SliceRandom;
-use rand::{thread_rng, Rng};
+use rand::thread_rng;
+
+use crate::board::{Board, BOARD_SIZE};
 
 pub trait Solver {
     fn solve(&self, board: &mut Board) -> bool;
@@ -19,13 +19,11 @@ impl Solver for SimpleSolver {
 }
 
 impl SimpleSolver {
-
     pub fn new() -> SimpleSolver {
         SimpleSolver
     }
 
     fn fill_cell(board: &mut Board, row: usize, col: usize) -> bool {
-
         if row == BOARD_SIZE || col == BOARD_SIZE {
             return true;
         }
@@ -56,5 +54,4 @@ impl SimpleSolver {
         let cell = row * BOARD_SIZE + col + 1;
         (cell / BOARD_SIZE, cell % BOARD_SIZE)
     }
-
 }

@@ -1,67 +1,123 @@
+use std::collections::HashMap;
 use std::io;
 
 use crate::board::BOARD_SIZE;
-use crate::input::Command::{Quit, WriteDigit, WrongInput, Solve, NewEasy, NewMedium, NewHard, NewExpert};
+use crate::game::Game;
+use crate::generator::Difficulty;
 
-pub enum Command {
-    WrongInput(String),
-    WriteDigit(usize, usize, u8),
-    NewEasy,
-    NewMedium,
-    NewHard,
-    NewExpert,
-    Solve,
-    Quit,
+pub type InputCommand = Box<dyn FnOnce(&mut Game) -> ()>;
+pub type ParseCommand = fn (Vec<&str>) -> InputCommand;
+
+lazy_static! {
+    static ref COMMANDS: HashMap<&'static str, ParseCommand> = {
+        let mut m = HashMap::<&'static str, ParseCommand>::new();
+        m.insert("new", cmd_new);
+        m.insert("clear", cmd_clear_cell_value);
+        m.insert("solve", cmd_solve);
+        m.insert("quit", cmd_quit);
+        m
+    };
 }
 
-pub fn read_input() -> Command {
+pub fn read_input_command() -> InputCommand {
     let mut line = String::new();
     if let Err(_) = io::stdin().read_line(&mut line) {
-        return WrongInput(String::from("Unable to read input"));
+        return cmd_error(vec!["Unknown command"]);
     }
 
     let inputs: Vec<_> = line.trim().split(" ").into_iter().collect();
-
-    match inputs.len() {
-        1 => parse_command_no_args(inputs[0]),
-        3 => parse_write_digit(&inputs),
-        _ => WrongInput(String::from("Unknown command")),
+    if let Some(parse_command) = COMMANDS.get(inputs[0]) {
+        parse_command(inputs)
+    } else if inputs.len() == 3 {
+        cmd_write_cell_value(inputs)
+    } else {
+        cmd_error(vec!["Unknown command"])
     }
 }
 
-fn parse_write_digit(inputs: &Vec<&str>) -> Command {
-    assert_eq!(inputs.len(), 3);
 
-    if let Ok(row) = read_one_digit(inputs[0], 1) {
-        if let Ok(col) = read_one_digit(inputs[1], 1) {
-            if let Ok(val) = read_one_digit(inputs[2], 0) {
-                return WriteDigit(row as usize, col as usize, val);
+fn cmd_error(args: Vec<&'static str>) -> InputCommand {
+    assert_eq!(args.len(), 1);
+    let message = args[0];
+    Box::new(move |game| {
+        game.set_message(format!("Error: {}", message));
+    })
+}
+
+fn cmd_new(args: Vec<&str>) -> InputCommand {
+    let difficulty = args.get(1)
+        .map(|s| s.to_lowercase())
+        .map(|s| {
+            match s.as_str() {
+                "easy" => Some(Difficulty::Easy),
+                "medium" => Some(Difficulty::Medium),
+                "hard" => Some(Difficulty::Hard),
+                "expert" => Some(Difficulty::Expert),
+                _ => None
+            }
+        })
+        .flatten();
+
+    if let Some(d) = difficulty {
+        Box::new(move |game| {
+            game.new_grid(d);
+            game.set_message(String::new());
+        })
+    } else {
+        cmd_error(vec!["Usage: new [easy|medium|hard|expert]"])
+    }
+}
+
+fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
+    if let Ok(row) = read_one_digit(args[0]) {
+        if let Ok(col) = read_one_digit(args[1]) {
+            if let Ok(val) = read_one_digit(args[2]) {
+                return Box::new(move |game| {
+                    match game.fill_cell((row - 1) as usize, (col - 1) as usize, val) {
+                        Ok(_) => game.set_message(format!("Last play: [{},{}] = {}", row, col, val)),
+                        Err(_) => game.set_message(format!("Error: Forbidden play: [{},{}] = {}", row, col, val)),
+                    };
+                });
             }
         }
     }
-
-    WrongInput(format!(
-        "Expected values: [1-{}] [1-{}] [0-{}]",
-        BOARD_SIZE, BOARD_SIZE, BOARD_SIZE
-    ))
+    cmd_error(vec!["Usage: <row:[1-9]> <col:[1-9]> <val:[1-9]>"])
 }
 
-fn parse_command_no_args(input: &str) -> Command {
-    let input = String::from(input).to_lowercase();
-    match input.as_str() {
-        "quit" => Quit,
-        "solve" => Solve,
-        "easy" => NewEasy,
-        "medium" => NewMedium,
-        "hard" => NewHard,
-        "expert" => NewExpert,
-        _ => WrongInput(String::from("Unknown command"))
+fn cmd_clear_cell_value(args: Vec<&str>) -> InputCommand {
+    if let Ok(row) = read_one_digit(args[1]) {
+        if let Ok(col) = read_one_digit(args[2]) {
+            return Box::new(move |game| {
+                match game.fill_cell((row - 1) as usize, (col - 1) as usize, 0) {
+                    Ok(_) => game.set_message(format!("Last play: clear [{},{}]", row, col)),
+                    Err(_) => game.set_message(format!("Error: Forbidden play: clear [{},{}]", row, col)),
+                };
+            });
+        }
     }
+    cmd_error(vec!["Usage: clear <row:[1-9]> <col:[1-9]>"])
 }
 
-fn read_one_digit(input: &str, min: u8) -> Result<u8, ()> {
+fn cmd_solve(_args: Vec<&str>) -> InputCommand {
+    Box::new(|game| {
+        let solved = game.solve();
+        if solved {
+            game.set_message(String::from("Solved."));
+        } else {
+            game.set_message(String::from("No solution found."));
+        }
+    })
+}
+
+fn cmd_quit(_args: Vec<&str>) -> InputCommand {
+    Box::new(|game| {
+        game.quit();
+    })
+}
+
+fn read_one_digit(input: &str) -> Result<u8, ()> {
     if let Ok(val) = input.parse::<u8>() {
-        if (min..=BOARD_SIZE as u8).contains(&val) {
+        if (1..=BOARD_SIZE as u8).contains(&val) {
             return Ok(val);
         }
     }

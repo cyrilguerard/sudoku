@@ -95,7 +95,6 @@ impl Clone for Board {
 }
 
 impl Board {
-
     pub fn new(generator: Option<&dyn Generator>) -> Board {
         let mut board = Board::default();
         generator.map(|g| g.fill(&mut board));
@@ -112,6 +111,7 @@ impl Board {
         col: usize,
         val: u8,
     ) -> std::result::Result<(), String> {
+
         if !self.can_set_value(row, col, val) {
             return Err(String::from("Forbidden value"));
         }
