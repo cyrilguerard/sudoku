@@ -14,6 +14,7 @@ lazy_static! {
         m.insert("new", cmd_new);
         m.insert("clear", cmd_clear_cell_value);
         m.insert("solve", cmd_solve);
+        m.insert("help", cmd_show_help);
         m.insert("quit", cmd_quit);
         m
     };
@@ -75,7 +76,8 @@ fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
                         match game.fill_cell((row - 1) as usize, (col - 1) as usize, val) {
                             Ok(_) => {
                                 if game.board().is_solved() {
-                                    game.set_message(format!("Congratulations !!! You solved this Sudoku."))
+                                    let seconds = game.start_time().elapsed().as_secs();
+                                    game.set_message(format!("Congratulations !!! You solved this Sudoku in {}m{}s.", seconds / 60, seconds % 60))
                                 } else {
                                     game.set_message(format!("Last play: [{},{}] = {}", row, col, val))
                                 }
@@ -118,6 +120,18 @@ fn cmd_solve(_args: Vec<&str>) -> InputCommand {
         } else {
             game.set_message(String::from("No solution found."));
         }
+    })
+}
+
+fn cmd_show_help(_args: Vec<&str>) -> InputCommand {
+    Box::new(|game| {
+        game.set_message(String::from("[Help] Available commands: \
+        <row> <col> <val> | \
+        clear <row> <col> | \
+        new <difficulty> | \
+        solve | \
+        help | \
+        quit"));
     })
 }
 

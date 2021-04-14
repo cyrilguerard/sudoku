@@ -3,21 +3,23 @@ use crate::generator::{BasicGenerator, Difficulty, Generator};
 use crate::input;
 use crate::render::{ConsoleRender, Render};
 use crate::solver::{SimpleSolver, Solver};
+use std::time::Instant;
 
-#[derive(Default)]
 pub struct Game {
     title: String,
     board: Board,
     message: String,
+    start_time: Instant,
     quit: bool,
 }
 
 impl Game {
     pub fn new() -> Game {
         Game {
-            title: String::from("Sudoku [EASY]"),
-            board: Board::new(),
+            title: String::from("Sudoku"),
+            board: BasicGenerator::new(Difficulty::Easy).generate(),
             message: String::from("Welcome"),
+            start_time: Instant::now(),
             quit: false,
         }
     }
@@ -34,8 +36,13 @@ impl Game {
         self.message = msg
     }
 
+    pub fn start_time(&self) -> &Instant {
+        &self.start_time
+    }
+
     pub fn new_grid(&mut self, difficulty: Difficulty) {
         self.board = BasicGenerator::new(difficulty).generate();
+        self.start_time = Instant::now();
     }
 
     pub fn fill_cell(&mut self, row: usize, col: usize, val: u8) -> Result<(), String> {
