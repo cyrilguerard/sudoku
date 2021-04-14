@@ -2,7 +2,7 @@ use crate::board::Board;
 use crate::generator::{BasicGenerator, Difficulty};
 use crate::input;
 use crate::render::{ConsoleRender, Render};
-use crate::solver::{Solver, SimpleSolver};
+use crate::solver::{SimpleSolver, Solver};
 
 #[derive(Default)]
 pub struct Game {
@@ -13,11 +13,10 @@ pub struct Game {
 }
 
 impl Game {
-
     pub fn new() -> Game {
         Game {
             title: String::from("Sudoku [EASY]"),
-            board: Board::new(Some(&BasicGenerator::new(Difficulty::Easy))),
+            board: Board::new_empty(),
             message: String::from("WeWelcomeWelcomelcome"),
             quit: false,
         }
@@ -36,10 +35,10 @@ impl Game {
     }
 
     pub fn new_grid(&mut self, difficulty: Difficulty) {
-        self.board = Board::new(Some(&BasicGenerator::new(difficulty)));
+        self.board = Board::new_filled(&BasicGenerator::new(difficulty));
     }
 
-    pub fn fill_cell(&mut self, row: usize, col: usize, val: u8) -> Result<(), String>{
+    pub fn fill_cell(&mut self, row: usize, col: usize, val: u8) -> Result<(), String> {
         self.board.set_value(row, col, val)
     }
 
@@ -58,7 +57,6 @@ impl Game {
         console.render(self); // workaround to clean the screen
 
         while !self.quit {
-
             let command = input::read_input_command();
             command(self);
 

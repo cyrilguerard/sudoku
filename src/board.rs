@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Formatter, Result};
 
-use crate::generator::Generator;
+use crate::generator::{Difficulty, Generator};
 use bitmask::bitmask;
 
 pub const BOARD_BOX_SIZE: usize = 3;
@@ -95,9 +95,13 @@ impl Clone for Board {
 }
 
 impl Board {
-    pub fn new(generator: Option<&dyn Generator>) -> Board {
+    pub fn new_empty() -> Board {
+        Board::default()
+    }
+
+    pub fn new_filled(generator: &dyn Generator) -> Board {
         let mut board = Board::default();
-        generator.map(|g| g.fill(&mut board));
+        generator.fill(&mut board);
         board
     }
 
@@ -111,7 +115,6 @@ impl Board {
         col: usize,
         val: u8,
     ) -> std::result::Result<(), String> {
-
         if !self.can_set_value(row, col, val) {
             return Err(String::from("Forbidden value"));
         }

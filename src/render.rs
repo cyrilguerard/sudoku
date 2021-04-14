@@ -19,7 +19,8 @@ pub struct ConsoleRender {
 
 impl Render for ConsoleRender {
     fn render(&mut self, game: &Game) {
-        self.write(game.board(), &game.message().to_string()).unwrap()
+        self.write(game.board(), &game.message().to_string())
+            .unwrap()
     }
 }
 
@@ -49,7 +50,6 @@ impl ConsoleRender {
     }
 
     fn write_board(&mut self, board: &Board) -> Result<(), Box<dyn Error>> {
-
         let cell_color = Rgb(127, 127, 127);
         let box_color = LightGreen;
 

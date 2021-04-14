@@ -6,7 +6,7 @@ use crate::game::Game;
 use crate::generator::Difficulty;
 
 pub type InputCommand = Box<dyn FnOnce(&mut Game) -> ()>;
-pub type ParseCommand = fn (Vec<&str>) -> InputCommand;
+pub type ParseCommand = fn(Vec<&str>) -> InputCommand;
 
 lazy_static! {
     static ref COMMANDS: HashMap<&'static str, ParseCommand> = {
@@ -35,7 +35,6 @@ pub fn read_input_command() -> InputCommand {
     }
 }
 
-
 fn cmd_error(args: Vec<&'static str>) -> InputCommand {
     assert_eq!(args.len(), 1);
     let message = args[0];
@@ -45,16 +44,15 @@ fn cmd_error(args: Vec<&'static str>) -> InputCommand {
 }
 
 fn cmd_new(args: Vec<&str>) -> InputCommand {
-    let difficulty = args.get(1)
+    let difficulty = args
+        .get(1)
         .map(|s| s.to_lowercase())
-        .map(|s| {
-            match s.as_str() {
-                "easy" => Some(Difficulty::Easy),
-                "medium" => Some(Difficulty::Medium),
-                "hard" => Some(Difficulty::Hard),
-                "expert" => Some(Difficulty::Expert),
-                _ => None
-            }
+        .map(|s| match s.as_str() {
+            "easy" => Some(Difficulty::Easy),
+            "medium" => Some(Difficulty::Medium),
+            "hard" => Some(Difficulty::Hard),
+            "expert" => Some(Difficulty::Expert),
+            _ => None,
         })
         .flatten();
 
@@ -69,15 +67,22 @@ fn cmd_new(args: Vec<&str>) -> InputCommand {
 }
 
 fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
-    if let Ok(row) = read_one_digit(args[0]) {
-        if let Ok(col) = read_one_digit(args[1]) {
-            if let Ok(val) = read_one_digit(args[2]) {
-                return Box::new(move |game| {
-                    match game.fill_cell((row - 1) as usize, (col - 1) as usize, val) {
-                        Ok(_) => game.set_message(format!("Last play: [{},{}] = {}", row, col, val)),
-                        Err(_) => game.set_message(format!("Error: Forbidden play: [{},{}] = {}", row, col, val)),
-                    };
-                });
+    if args.len() == 3 {
+        if let Ok(row) = read_one_digit(args[0]) {
+            if let Ok(col) = read_one_digit(args[1]) {
+                if let Ok(val) = read_one_digit(args[2]) {
+                    return Box::new(move |game| {
+                        match game.fill_cell((row - 1) as usize, (col - 1) as usize, val) {
+                            Ok(_) => {
+                                game.set_message(format!("Last play: [{},{}] = {}", row, col, val))
+                            }
+                            Err(_) => game.set_message(format!(
+                                "Error: Forbidden play: [{},{}] = {}",
+                                row, col, val
+                            )),
+                        };
+                    });
+                }
             }
         }
     }
@@ -85,14 +90,17 @@ fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
 }
 
 fn cmd_clear_cell_value(args: Vec<&str>) -> InputCommand {
-    if let Ok(row) = read_one_digit(args[1]) {
-        if let Ok(col) = read_one_digit(args[2]) {
-            return Box::new(move |game| {
-                match game.fill_cell((row - 1) as usize, (col - 1) as usize, 0) {
-                    Ok(_) => game.set_message(format!("Last play: clear [{},{}]", row, col)),
-                    Err(_) => game.set_message(format!("Error: Forbidden play: clear [{},{}]", row, col)),
-                };
-            });
+    if args.len() == 3 {
+        if let Ok(row) = read_one_digit(args[1]) {
+            if let Ok(col) = read_one_digit(args[2]) {
+                return Box::new(move |game| {
+                    match game.fill_cell((row - 1) as usize, (col - 1) as usize, 0) {
+                        Ok(_) => game.set_message(format!("Last play: clear [{},{}]", row, col)),
+                        Err(_) => game
+                            .set_message(format!("Error: Forbidden play: clear [{},{}]", row, col)),
+                    };
+                });
+            }
         }
     }
     cmd_error(vec!["Usage: clear <row:[1-9]> <col:[1-9]>"])

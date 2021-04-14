@@ -1,5 +1,5 @@
-use rand::thread_rng;
 use rand::prelude::SliceRandom;
+use rand::thread_rng;
 
 use crate::board::{Board, BOARD_SIZE};
 use crate::solver::{SimpleSolver, Solver};
