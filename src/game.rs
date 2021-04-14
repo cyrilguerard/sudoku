@@ -50,7 +50,16 @@ impl Game {
     }
 
     pub fn solve(&mut self) -> bool {
-        SimpleSolver::new().solve(&mut self.board)
+        let solved = SimpleSolver::new().solve(&mut self.board);
+        if solved {
+            self.board.freeze();
+        }
+        solved
+    }
+
+    pub fn reset(&mut self) {
+        self.board.reset();
+        self.start_time = Instant::now();
     }
 
     pub fn quit(&mut self) {

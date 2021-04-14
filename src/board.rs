@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Formatter, Result};
 
+use crate::board::Cell::{Fixed, Free};
 use bitmask::bitmask;
 
 pub const BOARD_BOX_SIZE: usize = 3;
@@ -30,9 +31,10 @@ impl Default for FreeNumberMask {
 
 impl Debug for FreeNumberMask {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let v: Vec<u8> = (0u16..=9).into_iter()
+        let v: Vec<u8> = (0u16..=9)
+            .into_iter()
             .map(|d| self.contains(Into::<FreeNumberFlags>::into(d)))
-            .map(|b| if b {1} else {0})
+            .map(|b| if b { 1 } else { 0 })
             .collect();
         write!(f, "{:?}", v)?;
         Result::Ok(())
@@ -79,23 +81,65 @@ impl Into<u16> for FreeNumberFlags {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
+pub struct Value(u8);
+
+impl From<u8> for Value {
+    fn from(val: u8) -> Self {
+        assert!(0 <= val && val <= 9);
+        Value(val)
+    }
+}
+
+impl Into<u8> for Value {
+    fn into(self) -> u8 {
+        self.0
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Cell {
+    Fixed(Value),
+    Free(Value),
+}
+
+impl Default for Cell {
+    fn default() -> Self {
+        Free(0u8.into())
+    }
+}
+
+impl Into<u8> for Cell {
+    fn into(self) -> u8 {
+        match self {
+            Fixed(v) => v,
+            Free(v) => v,
+        }
+        .into()
+    }
+}
+
+impl Cell {
+    fn new(val: u8, fixed: bool) -> Cell {
+        let val = Value::from(val);
+        if fixed {
+            Fixed(val)
+        } else {
+            Free(val)
+        }
+    }
+
+    fn lock(cell: Cell) -> Cell {
+        Cell::new(cell.into(), true)
+    }
+}
+
+#[derive(Default, Clone)]
 pub struct Board {
     free_number_rows: [FreeNumberMask; BOARD_SIZE],
     free_number_columns: [FreeNumberMask; BOARD_SIZE],
     free_number_boxes: [FreeNumberMask; BOARD_SIZE],
-    cells: [[u8; BOARD_SIZE]; BOARD_SIZE],
-}
-
-impl Clone for Board {
-    fn clone(&self) -> Self {
-        Board {
-            free_number_rows: self.free_number_rows.clone(),
-            free_number_columns: self.free_number_columns.clone(),
-            free_number_boxes: self.free_number_boxes.clone(),
-            cells: self.cells.clone(),
-        }
-    }
+    cells: [[Cell; BOARD_SIZE]; BOARD_SIZE],
 }
 
 impl Board {
@@ -103,8 +147,29 @@ impl Board {
         Board::default()
     }
 
+    pub fn freeze(&mut self) {
+        for row in self.cells.iter_mut() {
+            for cell in row.iter_mut() {
+                let val: u8 = (*cell).into();
+                if val != 0 {
+                    *cell = Cell::lock(*cell)
+                }
+            }
+        }
+    }
+
+    pub fn reset(&mut self) {
+        for row in self.cells.iter_mut() {
+            for cell in row.iter_mut() {
+                if let Free(val) = *cell {
+                    *cell = Free(0.into());
+                }
+            }
+        }
+    }
+
     pub fn get_value(&self, row: usize, col: usize) -> u8 {
-        self.cells[row][col]
+        self.cells[row][col].into()
     }
 
     pub fn set_value(
@@ -113,12 +178,16 @@ impl Board {
         col: usize,
         val: u8,
     ) -> std::result::Result<(), String> {
+        if self.is_fixed_value(row, col) {
+            return Err(String::from("Fixed value"));
+        }
+
         if !self.can_set_value(row, col, val) {
             return Err(String::from("Forbidden value"));
         }
 
         self.clear_value(row, col);
-        self.cells[row][col] = val;
+        self.cells[row][col] = Cell::new(val, false);
 
         if val != 0 {
             let flag = FreeNumberFlags::from(val as u16);
@@ -130,15 +199,21 @@ impl Board {
         Ok(())
     }
 
-    pub fn clear_value(&mut self, row: usize, col: usize) {
-        let val = self.cells[row][col] as u16;
+    pub fn clear_value(&mut self, row: usize, col: usize) -> std::result::Result<(), String> {
+        if self.is_fixed_value(row, col) {
+            return Err(String::from("Fixed value"));
+        }
+
+        let val = self.get_value(row, col) as u16;
         if val != 0 {
             let flag = FreeNumberFlags::from(val);
             self.free_number_rows[row].set(flag);
             self.free_number_columns[col].set(flag);
             self.free_number_boxes[Board::compute_box_index(row, col)].set(flag);
-            self.cells[row][col] = 0;
+            self.cells[row][col] = Cell::new(0, false);
         }
+
+        Ok(())
     }
 
     pub fn get_available_values(&self, row: usize, col: usize) -> Vec<u8> {
@@ -169,13 +244,21 @@ impl Board {
     fn compute_box_index(row: usize, col: usize) -> usize {
         (row / BOARD_BOX_SIZE) * BOARD_BOX_SIZE + (col / BOARD_BOX_SIZE)
     }
+
+    fn is_fixed_value(&self, row: usize, col: usize) -> bool {
+        if let Fixed(_) = self.cells[row][col] {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::board::{Board, FreeNumberFlags};
     use crate::generator::BasicGenerator;
-    use crate::solver::{Solver, SimpleSolver};
+    use crate::solver::{SimpleSolver, Solver};
 
     #[test]
     fn test_fnf_from_u16() {
@@ -208,7 +291,7 @@ mod tests {
         let mut board = Board::new();
         assert!(!board.is_solved());
 
-        SimpleSolver::new().solve(& mut board);
+        SimpleSolver::new().solve(&mut board);
         assert!(board.is_solved())
     }
 }

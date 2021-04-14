@@ -14,6 +14,7 @@ lazy_static! {
         m.insert("new", cmd_new);
         m.insert("clear", cmd_clear_cell_value);
         m.insert("solve", cmd_solve);
+        m.insert("reset", cmd_reset);
         m.insert("help", cmd_show_help);
         m.insert("quit", cmd_quit);
         m
@@ -77,14 +78,18 @@ fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
                             Ok(_) => {
                                 if game.board().is_solved() {
                                     let seconds = game.start_time().elapsed().as_secs();
-                                    game.set_message(format!("Congratulations !!! You solved this Sudoku in {}m{}s.", seconds / 60, seconds % 60))
+                                    game.set_message(format!(
+                                        "Congratulations !!! You solved this Sudoku in {}m{}s.",
+                                        seconds / 60,
+                                        seconds % 60
+                                    ))
                                 } else {
-                                    game.set_message(format!("Last play: [{},{}] = {}", row, col, val))
+                                    game.set_message(format!("[{},{}] = {} done", row, col, val))
                                 }
                             }
-                            Err(_) => game.set_message(format!(
-                                "Error: Forbidden play: [{},{}] = {}",
-                                row, col, val
+                            Err(e) => game.set_message(format!(
+                                "Error: {} (input: [{},{}] = {})",
+                                e, row, col, val
                             )),
                         };
                     });
@@ -101,9 +106,10 @@ fn cmd_clear_cell_value(args: Vec<&str>) -> InputCommand {
             if let Ok(col) = read_one_digit(args[2]) {
                 return Box::new(move |game| {
                     match game.fill_cell((row - 1) as usize, (col - 1) as usize, 0) {
-                        Ok(_) => game.set_message(format!("Last play: clear [{},{}]", row, col)),
-                        Err(_) => game
-                            .set_message(format!("Error: Forbidden play: clear [{},{}]", row, col)),
+                        Ok(_) => game.set_message(format!("[{},{}] cleared", row, col)),
+                        Err(e) => {
+                            game.set_message(format!("Error: {} (clear: [{},{}])", e, row, col))
+                        }
                     };
                 });
             }
@@ -123,15 +129,25 @@ fn cmd_solve(_args: Vec<&str>) -> InputCommand {
     })
 }
 
+fn cmd_reset(_args: Vec<&str>) -> InputCommand {
+    Box::new(|game| {
+        game.reset();
+        game.set_message(String::new());
+    })
+}
+
 fn cmd_show_help(_args: Vec<&str>) -> InputCommand {
     Box::new(|game| {
-        game.set_message(String::from("[Help] Available commands: \
+        game.set_message(String::from(
+            "[Help] Available commands: \
         <row> <col> <val> | \
         clear <row> <col> | \
         new <difficulty> | \
         solve | \
+        reset | \
         help | \
-        quit"));
+        quit",
+        ));
     })
 }
 

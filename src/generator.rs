@@ -36,8 +36,13 @@ impl Generator for BasicGenerator {
         cells
             .iter()
             .take(total_cells - self.nb_filled_cell as usize)
-            .for_each(|pos| board.clear_value(pos / BOARD_SIZE, pos % BOARD_SIZE));
+            .for_each(|pos| {
+                board
+                    .clear_value(pos / BOARD_SIZE, pos % BOARD_SIZE)
+                    .unwrap()
+            });
 
+        board.freeze();
         board
     }
 }
