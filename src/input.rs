@@ -74,7 +74,11 @@ fn cmd_write_cell_value(args: Vec<&str>) -> InputCommand {
                     return Box::new(move |game| {
                         match game.fill_cell((row - 1) as usize, (col - 1) as usize, val) {
                             Ok(_) => {
-                                game.set_message(format!("Last play: [{},{}] = {}", row, col, val))
+                                if game.board().is_solved() {
+                                    game.set_message(format!("Congratulations !!! You solved this Sudoku."))
+                                } else {
+                                    game.set_message(format!("Last play: [{},{}] = {}", row, col, val))
+                                }
                             }
                             Err(_) => game.set_message(format!(
                                 "Error: Forbidden play: [{},{}] = {}",

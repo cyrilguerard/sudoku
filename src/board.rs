@@ -8,8 +8,8 @@ pub const BOARD_SIZE: usize = BOARD_BOX_SIZE * BOARD_BOX_SIZE;
 bitmask! {
 
     mask FreeNumberMask: u16 where flags FreeNumberFlags {
-        _0 = 0,
-        _1 = 1,
+        _0 = 0, // unused to easy index
+        _1 = 1 << 0,
         _2 = 1 << 1,
         _3 = 1 << 2,
         _4 = 1 << 3,
@@ -29,7 +29,12 @@ impl Default for FreeNumberMask {
 }
 
 impl Debug for FreeNumberMask {
-    fn fmt(&self, _: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let v: Vec<u8> = (0u16..=9).into_iter()
+            .map(|d| self.contains(Into::<FreeNumberFlags>::into(d)))
+            .map(|b| if b {1} else {0})
+            .collect();
+        write!(f, "{:?}", v)?;
         Result::Ok(())
     }
 }
@@ -94,7 +99,6 @@ impl Clone for Board {
 }
 
 impl Board {
-
     pub fn new() -> Board {
         Board::default()
     }
@@ -122,6 +126,7 @@ impl Board {
             self.free_number_columns[col].unset(flag);
             self.free_number_boxes[Board::compute_box_index(row, col)].unset(flag);
         }
+
         Ok(())
     }
 
@@ -147,6 +152,12 @@ impl Board {
             .collect()
     }
 
+    pub fn is_solved(&self) -> bool {
+        self.free_number_rows
+            .iter()
+            .all(|mask| mask.count_ones() == 0)
+    }
+
     fn can_set_value(&self, row: usize, col: usize, val: u8) -> bool {
         let flag = FreeNumberFlags::from(val as u16);
 
@@ -163,6 +174,8 @@ impl Board {
 #[cfg(test)]
 mod tests {
     use crate::board::{Board, FreeNumberFlags};
+    use crate::generator::BasicGenerator;
+    use crate::solver::{Solver, SimpleSolver};
 
     #[test]
     fn test_fnf_from_u16() {
@@ -188,5 +201,14 @@ mod tests {
                 assert_eq!(0, Board::compute_box_index(row, col));
             })
         })
+    }
+
+    #[test]
+    fn test_is_solved() {
+        let mut board = Board::new();
+        assert!(!board.is_solved());
+
+        SimpleSolver::new().solve(& mut board);
+        assert!(board.is_solved())
     }
 }

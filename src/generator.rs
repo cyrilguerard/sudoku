@@ -25,11 +25,9 @@ pub struct BasicGenerator {
 }
 
 impl Generator for BasicGenerator {
-
     fn generate(&self) -> Board {
-
         let mut board = Board::new();
-        SimpleSolver::new().solve(& mut board); // always solvable
+        SimpleSolver::new().solve(&mut board); // always solvable
 
         let total_cells = BOARD_SIZE * BOARD_SIZE;
         let mut cells: Vec<usize> = (0..total_cells).collect();
