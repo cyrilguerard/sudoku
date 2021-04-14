@@ -1,5 +1,5 @@
 use crate::board::Board;
-use crate::generator::{BasicGenerator, Difficulty};
+use crate::generator::{BasicGenerator, Difficulty, Generator};
 use crate::input;
 use crate::render::{ConsoleRender, Render};
 use crate::solver::{SimpleSolver, Solver};
@@ -16,8 +16,8 @@ impl Game {
     pub fn new() -> Game {
         Game {
             title: String::from("Sudoku [EASY]"),
-            board: Board::new_empty(),
-            message: String::from("WeWelcomeWelcomelcome"),
+            board: Board::new(),
+            message: String::from("Welcome"),
             quit: false,
         }
     }
@@ -35,7 +35,7 @@ impl Game {
     }
 
     pub fn new_grid(&mut self, difficulty: Difficulty) {
-        self.board = Board::new_filled(&BasicGenerator::new(difficulty));
+        self.board = BasicGenerator::new(difficulty).generate();
     }
 
     pub fn fill_cell(&mut self, row: usize, col: usize, val: u8) -> Result<(), String> {

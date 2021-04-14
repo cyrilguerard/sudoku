@@ -1,6 +1,5 @@
 use std::fmt::{Debug, Formatter, Result};
 
-use crate::generator::{Difficulty, Generator};
 use bitmask::bitmask;
 
 pub const BOARD_BOX_SIZE: usize = 3;
@@ -95,14 +94,9 @@ impl Clone for Board {
 }
 
 impl Board {
-    pub fn new_empty() -> Board {
-        Board::default()
-    }
 
-    pub fn new_filled(generator: &dyn Generator) -> Board {
-        let mut board = Board::default();
-        generator.fill(&mut board);
-        board
+    pub fn new() -> Board {
+        Board::default()
     }
 
     pub fn get_value(&self, row: usize, col: usize) -> u8 {
@@ -168,7 +162,6 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
-
     use crate::board::{Board, FreeNumberFlags};
 
     #[test]

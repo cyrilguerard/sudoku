@@ -17,7 +17,7 @@ pub enum Difficulty {
 }
 
 pub trait Generator {
-    fn fill(&self, board: &mut Board);
+    fn generate(&self) -> Board;
 }
 
 pub struct BasicGenerator {
@@ -25,8 +25,11 @@ pub struct BasicGenerator {
 }
 
 impl Generator for BasicGenerator {
-    fn fill(&self, board: &mut Board) {
-        SimpleSolver::new().solve(board); // TODO: check if solvalble
+
+    fn generate(&self) -> Board {
+
+        let mut board = Board::new();
+        SimpleSolver::new().solve(& mut board); // always solvable
 
         let total_cells = BOARD_SIZE * BOARD_SIZE;
         let mut cells: Vec<usize> = (0..total_cells).collect();
@@ -36,6 +39,8 @@ impl Generator for BasicGenerator {
             .iter()
             .take(total_cells - self.nb_filled_cell as usize)
             .for_each(|pos| board.clear_value(pos / BOARD_SIZE, pos % BOARD_SIZE));
+
+        board
     }
 }
 
