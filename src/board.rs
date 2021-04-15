@@ -257,7 +257,7 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
-    
+
     use crate::board::{Board, FreeNumberFlags};
     use crate::solver::{SimpleSolver, Solver};
 

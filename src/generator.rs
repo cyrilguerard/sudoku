@@ -9,11 +9,23 @@ const MEDIUM: u8 = 30;
 const HARD: u8 = 25;
 const EXPERT: u8 = 23;
 
+#[derive(Copy, Clone)]
 pub enum Difficulty {
     Easy,
     Medium,
     Hard,
     Expert,
+}
+
+impl Into<&'static str> for Difficulty {
+    fn into(self) -> &'static str {
+        match self {
+            Difficulty::Easy => "Easy",
+            Difficulty::Medium => "Medium",
+            Difficulty::Hard => "Hard",
+            Difficulty::Expert => "Expert",
+        }
+    }
 }
 
 pub trait Generator {

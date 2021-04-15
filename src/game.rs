@@ -26,14 +26,16 @@ pub struct Game {
 impl Game {
 
     pub fn new() -> Game {
-        Game {
-            board: BasicGenerator::new(Difficulty::Easy).generate(),
+        let mut game = Game {
+            board: Board::new(),
             message:  String::from("Welcome"),
             start_time: Instant::now(),
             quit: false,
-            headers: vec![String::from("Sudoku")],
+            headers: vec![],
             footers: HELP.iter().map(|str| String::from(*str)).collect()
-        }
+        };
+        game.new_grid(Difficulty::Easy);
+        game
     }
 
     pub fn board(&self) -> &Board {
@@ -61,8 +63,12 @@ impl Game {
     }
 
     pub fn new_grid(&mut self, difficulty: Difficulty) {
-        self.board = BasicGenerator::new(difficulty).generate();
+        self.headers= vec![
+            String::from("Sudoku"),
+            String::new(),
+            format!("Difficulty: {}", Into::<&str>::into(difficulty))];
         self.start_time = Instant::now();
+        self.board = BasicGenerator::new(difficulty).generate();
     }
 
     pub fn fill_cell(&mut self, row: usize, col: usize, val: u8) -> Result<(), String> {
