@@ -168,8 +168,17 @@ impl Board {
         }
     }
 
-    pub fn get_value(&self, row: usize, col: usize) -> u8 {
-        self.cells[row][col].into()
+    pub fn get_value(&self, row: usize, col: usize) -> Option<u8> {
+        let val: u8 = self.cells[row][col].into();
+        if val == 0 { None } else { Some(val) }
+    }
+
+    pub fn is_fixed_value(&self, row: usize, col: usize) -> bool {
+        if let Fixed(_) = self.cells[row][col] {
+            true
+        } else {
+            false
+        }
     }
 
     pub fn set_value(
@@ -204,9 +213,8 @@ impl Board {
             return Err(String::from("Fixed value"));
         }
 
-        let val = self.get_value(row, col) as u16;
-        if val != 0 {
-            let flag = FreeNumberFlags::from(val);
+        if let Some(val) = self.get_value(row, col) {
+            let flag = FreeNumberFlags::from(val as u16);
             self.free_number_rows[row].set(flag);
             self.free_number_columns[col].set(flag);
             self.free_number_boxes[Board::compute_box_index(row, col)].set(flag);
@@ -245,19 +253,12 @@ impl Board {
         (row / BOARD_BOX_SIZE) * BOARD_BOX_SIZE + (col / BOARD_BOX_SIZE)
     }
 
-    fn is_fixed_value(&self, row: usize, col: usize) -> bool {
-        if let Fixed(_) = self.cells[row][col] {
-            true
-        } else {
-            false
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
+    
     use crate::board::{Board, FreeNumberFlags};
-    use crate::generator::BasicGenerator;
     use crate::solver::{SimpleSolver, Solver};
 
     #[test]

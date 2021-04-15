@@ -5,22 +5,34 @@ use crate::render::{ConsoleRender, Render};
 use crate::solver::{SimpleSolver, Solver};
 use std::time::Instant;
 
+const HELP: &'static [&'static str] = &[
+    "  <R> <C> <V>: Set the value V in the cell at row R and column C.",
+    "clear <R> <C>: Clear the value in the cell at row R and column C.",
+    "      new <D>: Start a new sudoku with difficulty D in [easy, medium, hard, expert].",
+    "        reset: Reset the current sudoku.",
+    "        solve: Solve the current sudoku.",
+    "         quit: Quit the game."
+];
+
 pub struct Game {
-    title: String,
     board: Board,
     message: String,
     start_time: Instant,
     quit: bool,
+    headers: Vec<String>,
+    footers: Vec<String>,
 }
 
 impl Game {
+
     pub fn new() -> Game {
         Game {
-            title: String::from("Sudoku"),
             board: BasicGenerator::new(Difficulty::Easy).generate(),
-            message: String::from("Welcome"),
+            message:  String::from("Welcome"),
             start_time: Instant::now(),
             quit: false,
+            headers: vec![String::from("Sudoku")],
+            footers: HELP.iter().map(|str| String::from(*str)).collect()
         }
     }
 
@@ -28,16 +40,24 @@ impl Game {
         &self.board
     }
 
-    pub fn message(&self) -> &str {
+    pub fn message(&self) -> &String {
         &self.message
     }
 
-    pub fn set_message(&mut self, msg: String) {
-        self.message = msg
+    pub fn set_message(&mut self, message: String) {
+        self.message = message;
     }
 
     pub fn start_time(&self) -> &Instant {
         &self.start_time
+    }
+
+    pub fn headers(&self) -> &Vec<String> {
+        &self.headers
+    }
+
+    pub fn footers(&self) -> &Vec<String> {
+        &self.footers
     }
 
     pub fn new_grid(&mut self, difficulty: Difficulty) {

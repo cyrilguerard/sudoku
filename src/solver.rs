@@ -33,7 +33,7 @@ impl SimpleSolver {
             return true;
         }
 
-        if board.get_value(row, col) != 0 {
+        if board.get_value(row, col).is_some() {
             let next_cell = Self::next_cell(row, col);
             return Self::fill_cell(board, next_cell.0, next_cell.1);
         }

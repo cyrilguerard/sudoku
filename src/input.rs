@@ -15,7 +15,6 @@ lazy_static! {
         m.insert("clear", cmd_clear_cell_value);
         m.insert("solve", cmd_solve);
         m.insert("reset", cmd_reset);
-        m.insert("help", cmd_show_help);
         m.insert("quit", cmd_quit);
         m
     };
@@ -134,21 +133,6 @@ fn cmd_reset(_args: Vec<&str>) -> InputCommand {
     Box::new(|game| {
         game.reset();
         game.set_message(String::new());
-    })
-}
-
-fn cmd_show_help(_args: Vec<&str>) -> InputCommand {
-    Box::new(|game| {
-        game.set_message(String::from(
-            "[Help] Available commands: \
-        <row> <col> <val> | \
-        clear <row> <col> | \
-        new <difficulty> | \
-        solve | \
-        reset | \
-        help | \
-        quit",
-        ));
     })
 }
 
