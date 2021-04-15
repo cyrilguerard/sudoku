@@ -6,12 +6,12 @@ use crate::solver::{SimpleSolver, Solver};
 use std::time::Instant;
 
 const HELP: &'static [&'static str] = &[
-    "  <R> <C> <V>: Set the value V in the cell at row R and column C.",
-    "clear <R> <C>: Clear the value in the cell at row R and column C.",
-    "      new <D>: Start a new sudoku with difficulty D in [easy, medium, hard, expert].",
-    "        reset: Reset the current sudoku.",
-    "        solve: Solve the current sudoku.",
-    "         quit: Quit the game."
+    "   <R> <C> <V>: Set the value V in the cell at row R and column C.",
+    " clear <R> <C>: Clear the value in the cell at row R and column C.",
+    "       new <D>: Start a new sudoku with difficulty D in [easy, medium, hard, expert].",
+    "         reset: Reset the current sudoku.",
+    "         solve: Solve the current sudoku.",
+    "          quit: Quit the game."
 ];
 
 pub struct Game {

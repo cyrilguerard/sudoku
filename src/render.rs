@@ -57,7 +57,7 @@ impl ConsoleRender {
         self.write_lines(&game.footers(), Align::LEFT)?;
         self.write_line_break()?;
         self.write_line_break()?;
-        self.write_line("sudoku$ ", Align::LEFT, false)?;
+        self.write_line(" sudoku$ ", Align::LEFT, false)?;
         self.screen.flush()?;
         Ok(())
     }
