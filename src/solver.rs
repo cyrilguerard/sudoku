@@ -12,7 +12,7 @@ pub struct SimpleSolver;
 impl Solver for SimpleSolver {
     fn solve(&self, board: &mut Board) -> bool {
         if board.is_solved() {
-           return true;
+            return true;
         }
 
         if Self::fill_cell(&mut board.clone(), 0, 0) {

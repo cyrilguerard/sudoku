@@ -170,7 +170,11 @@ impl Board {
 
     pub fn get_value(&self, row: usize, col: usize) -> Option<u8> {
         let val: u8 = self.cells[row][col].into();
-        if val == 0 { None } else { Some(val) }
+        if val == 0 {
+            None
+        } else {
+            Some(val)
+        }
     }
 
     pub fn is_fixed_value(&self, row: usize, col: usize) -> bool {
@@ -252,7 +256,6 @@ impl Board {
     fn compute_box_index(row: usize, col: usize) -> usize {
         (row / BOARD_BOX_SIZE) * BOARD_BOX_SIZE + (col / BOARD_BOX_SIZE)
     }
-
 }
 
 #[cfg(test)]

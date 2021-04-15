@@ -11,7 +11,7 @@ const HELP: &'static [&'static str] = &[
     "       new <D>: Start a new sudoku with difficulty D in [easy, medium, hard, expert].",
     "         reset: Reset the current sudoku.",
     "         solve: Solve the current sudoku.",
-    "          quit: Quit the game."
+    "          quit: Quit the game.",
 ];
 
 pub struct Game {
@@ -24,15 +24,14 @@ pub struct Game {
 }
 
 impl Game {
-
     pub fn new() -> Game {
         let mut game = Game {
             board: Board::new(),
-            message:  String::from("Welcome"),
+            message: String::from("Welcome"),
             start_time: Instant::now(),
             quit: false,
             headers: vec![],
-            footers: HELP.iter().map(|str| String::from(*str)).collect()
+            footers: HELP.iter().map(|str| String::from(*str)).collect(),
         };
         game.new_grid(Difficulty::Easy);
         game
@@ -63,10 +62,11 @@ impl Game {
     }
 
     pub fn new_grid(&mut self, difficulty: Difficulty) {
-        self.headers= vec![
+        self.headers = vec![
             String::from("Sudoku"),
             String::new(),
-            format!("Difficulty: {}", Into::<&str>::into(difficulty))];
+            format!("Difficulty: {}", Into::<&str>::into(difficulty)),
+        ];
         self.start_time = Instant::now();
         self.board = BasicGenerator::new(difficulty).generate();
     }
